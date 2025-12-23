@@ -2,6 +2,7 @@ import { isTextNode, isParagraphRelatedElement, isEmptyBlock } from "../utils/do
 import { Plugin } from "../plugin";
 import { closestBlock } from "../utils/blocks";
 import { unwrapContents, wrapInlinesInBlocks, splitTextNode, fillEmpty } from "../utils/dom";
+import { fillClipboardData } from "../utils/clipboard";
 import { childNodes, closestElement } from "../utils/dom_traversal";
 import { parseHTML } from "../utils/html";
 import {
@@ -13,6 +14,8 @@ import { isHtmlContentSupported } from "./selection_plugin";
 
 /**
  * @typedef { import("./selection_plugin").EditorSelection } EditorSelection
+ *
+ * @typedef {(() => boolean)[]} bypass_paste_image_files
  */
 
 const CLIPBOARD_BLACKLISTS = {
@@ -97,6 +100,20 @@ const ONLY_LINK_REGEX = /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w-./?%&=]*)?$/i;
  * @property {ClipboardPlugin['pasteText']} pasteText
  */
 
+/**
+ * @typedef {((img: HTMLImageElement) => void)[]} added_image_handlers
+ * @typedef {(() => void)[]} after_paste_handlers
+ * @typedef {(() => void)[]} before_paste_handlers
+ *
+ * @typedef {((selection: EditorSelection, text: string) => boolean)[]} paste_text_overrides
+ *
+ * @typedef {((
+ *     clonedContents: DocumentFragment,
+ *     selection: EditorSelection
+ *   ) => void | clonedContents)[]} clipboard_content_processors
+ * @typedef {((textContent: string) => string)[]} clipboard_text_processors
+ */
+
 export class ClipboardPlugin extends Plugin {
     static id = "clipboard";
     static dependencies = [
@@ -149,12 +166,7 @@ export class ClipboardPlugin extends Plugin {
             clonedContents = processor(clonedContents, selection) || clonedContents;
         }
         this.dependencies.dom.removeSystemProperties(clonedContents);
-        const dataHtmlElement = this.document.createElement("data");
-        dataHtmlElement.append(clonedContents);
-        prependOriginToImages(dataHtmlElement, window.location.origin);
-        const htmlContent = dataHtmlElement.innerHTML;
-        ev.clipboardData.setData("text/html", htmlContent);
-        ev.clipboardData.setData("application/vnd.odoo.odoo-editor", htmlContent);
+        fillClipboardData(ev, clonedContents);
     }
 
     /**
@@ -705,18 +717,5 @@ function getImageUrl(file) {
             }
             resolve(e.target.result);
         };
-    });
-}
-
-/**
- * Add origin to relative img src.
- * @param {string} origin
- */
-function prependOriginToImages(doc, origin) {
-    doc.querySelectorAll("img").forEach((img) => {
-        const src = img.getAttribute("src");
-        if (src && !/^(http|\/\/|data:)/.test(src)) {
-            img.src = origin + (src.startsWith("/") ? src : "/" + src);
-        }
     });
 }

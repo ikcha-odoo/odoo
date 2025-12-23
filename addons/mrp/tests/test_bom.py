@@ -1827,11 +1827,19 @@ class TestBoM(TestMrpCommon):
             move_raw.product_uom_qty = 1
             move_raw.product_uom = self.uom_dozen
         mo_2 = mo_form.save()
+        self.assertEqual(mo_2.state, 'draft')
         mo_2.action_confirm()
+        self.assertEqual(mo_2.state, 'confirmed')
         self.assertRecordValues(mo_2.move_raw_ids, [
             {'product_id': component_1.id, 'product_uom_qty': 2, 'product_uom': self.uom_dozen.id},
             {'product_id': component_2.id, 'product_uom_qty': 1, 'product_uom': self.uom_dozen.id}
         ])
+        mo_form = Form(mo_2)
+        with mo_form.move_raw_ids.edit(0) as move_raw:
+            move_raw.quantity = 5
+        with mo_form.move_raw_ids.edit(1) as move_raw:
+            move_raw.quantity = 5
+        mo_2 = mo_form.save()
 
         # Updates the BoM by set the second BoM line's quantity to 2.
         bom_form = Form(bom)
@@ -2796,6 +2804,49 @@ class TestBoM(TestMrpCommon):
         mo_form.bom_id = test_bom
         mo = mo_form.save()
         self.assertEqual(mo.workorder_ids.operation_id, kit_bom.operation_ids.filtered(lambda op: op.bom_product_template_attribute_value_ids == blue))
+
+    def test_correct_bom_final_product_unit(self):
+        """
+        Checks if the Final product (tracked by lot) is manufactured with the correct unit.
+        """
+        final_product = self.env['product.product'].create(dict({'is_storable': True}, name="Product to manufacture"))
+        final_product.tracking = 'lot'
+        # Create MO.with a different UOM
+        mo_form = Form(self.env['mrp.production'])
+        mo_form.product_id = final_product
+        mo_form.product_qty = 1
+        mo_form.product_uom_id = self.uom_dozen
+        mo = mo_form.save()
+        mo.action_confirm()
+        mo.button_mark_done()
+        self.assertEqual(mo.finished_move_line_ids.product_uom_id, self.uom_dozen)
+
+    def test_bom_overview_with_decimal_quantity(self):
+        """
+        Checks that the times for a bom with a decimal quantity
+        are correctly computed in the bom overview
+        """
+        product_in_square_meter = self.env['product.template'].create({
+            'name': 'test',
+            'uom_id': self.env.ref('uom.product_uom_square_meter').id,
+        })
+        workcenter = self.env['mrp.workcenter'].create({
+            'name': 'workcenter',
+        })
+        bom = self.env['mrp.bom'].create({
+            'product_tmpl_id': product_in_square_meter.id,
+            'product_qty': 1.5,
+            'operation_ids': [
+                Command.create({'name': 'operation', 'workcenter_id': workcenter.id, 'time_cycle_manual': 16}),
+            ],
+        })
+        bom_overview = self.env['report.mrp.report_bom_structure']._get_report_data(bom.id, 1.4)['lines']
+        self.assertEqual(bom_overview['operations_time'], 16)
+        bom_overview = self.env['report.mrp.report_bom_structure']._get_report_data(bom.id, 1.5)['lines']
+        self.assertEqual(bom_overview['operations_time'], 16)
+        bom_overview = self.env['report.mrp.report_bom_structure']._get_report_data(bom.id, 1.6)['lines']
+        self.assertEqual(bom_overview['operations_time'], 32)
+
 
 @tagged('-at_install', 'post_install')
 class TestTourBoM(HttpCase):

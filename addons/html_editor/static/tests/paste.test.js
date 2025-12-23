@@ -101,11 +101,10 @@ describe("Html Paste cleaning - whitelist", () => {
                 <table class="table table-bordered o_table">
                     <tbody>
                         <tr>
-                            <td><p><br></p></td>
+                            <td><p>[]<br></p></td>
                         </tr>
                     </tbody>
                 </table>
-                <p>[]<br></p>
             `),
         });
     });
@@ -3339,9 +3338,9 @@ describe("images", () => {
             // select xxx in "<p>ab[xxx]cd</p>""
             const p = editor.editable.querySelector("p");
             const selection = {
-                anchorNode: p.childNodes[1],
+                anchorNode: p.childNodes[0],
                 anchorOffset: 2,
-                focusNode: p.childNodes[1],
+                focusNode: p.childNodes[0],
                 focusOffset: 5,
             };
             setSelection(selection);
@@ -3541,9 +3540,9 @@ describe("youtube video", () => {
             // select xxx in "<p>ab[xxx]cd</p>"
             const p = editor.editable.querySelector("p");
             const selection = {
-                anchorNode: p.childNodes[1],
+                anchorNode: p.childNodes[0],
                 anchorOffset: 2,
-                focusNode: p.childNodes[1],
+                focusNode: p.childNodes[0],
                 focusOffset: 5,
             };
             setSelection(selection);
@@ -3648,6 +3647,42 @@ describe("editable in iframe", () => {
         const { el, editor } = await setupEditor("<p>[]</p>", { props: { iframe: true } });
         pasteOdooEditorHtml(editor, `<p>text<b>bold text</b>more text</p>`);
         expect(getContent(el)).toBe("<p>text<b>bold text</b>more text[]</p>");
+    });
+});
+
+describe("paste in contenteditable span", () => {
+    test("should unwrap block when pasting inside a contenteditable span", async () => {
+        const { el, editor } = await setupEditor(
+            `<p contenteditable="false"><span contenteditable="true">[]</span></p>`
+        );
+        pasteOdooEditorHtml(editor, `<h1>text<b>bold text</b>more text</h1>`);
+        expect(getContent(el)).toBe(
+            `<p data-selection-placeholder=""><br></p><p contenteditable="false"><span contenteditable="true">text<b>bold text</b>more text[]</span></p><p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`
+        );
+    });
+    test("should unwrap block with br between them when pasting inside a contenteditable span", async () => {
+        const { el, editor } = await setupEditor(
+            `<p contenteditable="false"><span contenteditable="true">[]</span></p>`
+        );
+        pasteOdooEditorHtml(
+            editor,
+            `<p>a paragraph</p><h1>text<b>bold text</b>more text</h1><p>another</p>`
+        );
+        expect(getContent(el)).toBe(
+            `<p data-selection-placeholder=""><br></p><p contenteditable="false"><span contenteditable="true">a paragraph<br>text<b>bold text</b>more text<br>another[]</span></p><p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`
+        );
+    });
+    test("should unwrap block with br between them when pasting in text inside a contenteditable span", async () => {
+        const { el, editor } = await setupEditor(
+            `<p contenteditable="false"><span contenteditable="true">ab[]cd</span></p>`
+        );
+        pasteOdooEditorHtml(
+            editor,
+            `<p>a paragraph</p><h1>text<b>bold text</b>more text</h1><p>another</p>`
+        );
+        expect(getContent(el)).toBe(
+            `<p data-selection-placeholder=""><br></p><p contenteditable="false"><span contenteditable="true">aba paragraph<br>text<b>bold text</b>more text<br>another[]cd</span></p><p data-selection-placeholder="" style="margin: -9px 0px 8px;"><br></p>`
+        );
     });
 });
 
@@ -3884,9 +3919,9 @@ ${"            "}
             </tr>
             <tr>
                 <td>14pt MONO TEXT
-                </td>
+                []</td>
             </tr>
-        </tbody></table><p>[]<br></p>`,
+        </tbody></table>`,
         });
     });
 
@@ -3994,10 +4029,10 @@ ${"        "}
                     text on color background</td>
             </tr>
             <tr>
-                <td>14pt MONO TEXT</td>
+                <td>14pt MONO TEXT[]</td>
             </tr>
         </tbody>
-    </table><p>[]<br></p>`,
+    </table>`,
         });
     });
 
@@ -4123,10 +4158,10 @@ ${"        "}
         </tr>
         <tr>
             <td>
-                14pt MONO TEXT
+                14pt MONO TEXT[]
             </td>
         </tr>
-    </tbody></table><p>[]<br></p>`,
+    </tbody></table>`,
         });
     });
 
@@ -4153,11 +4188,10 @@ ${"        "}
                 <table class="table table-bordered o_table">
                     <tbody>
                         <tr>
-                            <td><p><br></p></td>
+                            <td><p>[]<br></p></td>
                         </tr>
                     </tbody>
                 </table>
-                <p>[]<br></p>
             `),
         });
     });
@@ -4203,11 +4237,10 @@ ${"        "}
                                 </tr>
                                 <tr>
                                     <td>1</td>
-                                    <td>2</td>
+                                    <td>2[]</td>
                                 </tr>
                             </tbody>
                         </table>
-                        <p>[]<br></p>
                     `),
         });
     });
@@ -4234,11 +4267,10 @@ ${"        "}
                             <tbody>
                                 <tr>
                                     <th>1</th>
-                                    <th>2</th>
+                                    <th>2[]</th>
                                 </tr>
                             </tbody>
                         </table>
-                        <p>[]<br></p>
                     `),
         });
     });

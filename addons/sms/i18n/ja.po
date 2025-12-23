@@ -8,12 +8,13 @@
 # Andy Yiu, 2023
 # "Dylan Kiss (dyki)" <dyki@odoo.com>, 2025.
 # "Junko Augias (juau)" <juau@odoo.com>, 2025.
+# Weblate <noreply-mt-weblate@weblate.org>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0beta\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-10-08 18:39+0000\n"
-"PO-Revision-Date: 2025-10-13 08:02+0000\n"
+"PO-Revision-Date: 2025-12-20 09:38+0000\n"
 "Last-Translator: \"Junko Augias (juau)\" <juau@odoo.com>\n"
 "Language-Team: Japanese <https://translate.odoo.com/projects/odoo-19/sms/ja/>"
 "\n"
@@ -22,7 +23,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.12.2\n"
+"X-Generator: Weblate 5.14.3\n"
 
 #. module: sms
 #: model:ir.model.fields,field_description:sms.field_sms_composer__recipient_invalid_count
@@ -316,7 +317,7 @@ msgstr "送信者名を選択"
 #. module: sms
 #: model:ir.model,name:sms.model_res_company
 msgid "Companies"
-msgstr ""
+msgstr "会社"
 
 #. module: sms
 #: model:ir.model.fields,field_description:sms.field_sms_composer__composition_mode
@@ -598,7 +599,7 @@ msgstr "SMSコンポーザが特定の1人の受信者を対象にしている�
 #. odoo-javascript
 #: code:addons/sms/static/src/components/sms_widget/fields_sms_widget.xml:0
 msgid "Insert Field"
-msgstr ""
+msgstr "フィールドを挿入"
 
 #. module: sms
 #. odoo-javascript
@@ -796,6 +797,9 @@ msgid ""
 "usually be a placeholder expression that provides the appropriate language, "
 "e.g. {{ object.partner_id.lang }}."
 msgstr ""
+"メール送信時に選択できる任意の翻訳言語(ISOコード)。未設定の場合は、関連する取"
+"引先の言語が使用されます。通常は、たとえば {{ object.partner_id.lang }} "
+"のような、適切な言語を指定するプレースホルダー式を使用します。"
 
 #. module: sms
 #: model:ir.model,name:sms.model_sms_sms
@@ -824,7 +828,8 @@ msgstr "ドキュメントに投稿する"
 msgid ""
 "Prevent sending messages to blacklisted contacts. Disable only when "
 "absolutely necessary."
-msgstr ""
+msgstr "ブラックリストに登録された連絡先へのメッセージ送信を防止します。絶対に必要な"
+"場合のみ無効化してください。"
 
 #. module: sms
 #: model_terms:ir.ui.view,arch_db:sms.sms_template_preview_form
@@ -1019,7 +1024,7 @@ msgstr "SMSアカウント認証コードウィザード"
 #: model:ir.model.fields,field_description:sms.field_res_partner__message_has_sms_error
 #: model:ir.model.fields,field_description:sms.field_res_users__message_has_sms_error
 msgid "SMS Delivery error"
-msgstr "SMS配信エラー"
+msgstr "SMS送信エラー"
 
 #. module: sms
 #. odoo-javascript
@@ -1159,7 +1164,7 @@ msgstr "今すぐ送信"
 #: model:ir.actions.act_window,name:sms.sms_composer_action_form
 #: model:ir.model.fields.selection,name:sms.selection__ir_actions_server__state__sms
 msgid "Send SMS"
-msgstr "SMS配信"
+msgstr "SMS送信"
 
 #. module: sms
 #. odoo-python
@@ -1467,7 +1472,7 @@ msgstr "未登録アカウント"
 #. module: sms
 #: model:ir.model.fields,field_description:sms.field_sms_composer__use_exclusion_list
 msgid "Use Exclusion List"
-msgstr ""
+msgstr "除外リストを使用する"
 
 #. module: sms
 #: model:ir.model.fields,field_description:sms.field_sms_composer__template_id

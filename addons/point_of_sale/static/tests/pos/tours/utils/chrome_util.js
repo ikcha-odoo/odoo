@@ -1,3 +1,4 @@
+/* global posmodel */
 import * as Dialog from "@point_of_sale/../tests/generic_helpers/dialog_util";
 import { negate } from "@point_of_sale/../tests/generic_helpers/utils";
 import * as Numpad from "@point_of_sale/../tests/generic_helpers/numpad_util";
@@ -90,7 +91,7 @@ export function doCashMove(amount, reason) {
         })),
         {
             isActive: ["mobile"],
-            trigger: ".o-overlay-item:nth-child(2) .modal-footer button:contains('Ok')",
+            trigger: ".o-overlay-item:nth-child(2) .modal-footer button:contains('Confirm')",
             run: "click",
         },
         Dialog.confirm(),
@@ -192,6 +193,12 @@ export function presetTimingSlotIs(hour) {
 export function selectPresetTimingSlotHour(hour) {
     return { trigger: `.modal button:contains('${hour}')`, run: "click" };
 }
+export function presetTimingSlotHourNotExists(hour) {
+    return { trigger: negate(`.modal button:visible:contains('${hour}')`) };
+}
+export function presetTimingSlotHourExists(hour) {
+    return { trigger: `.modal button:contains('${hour}')` };
+}
 export function clickRegister() {
     return { trigger: ".pos-leftheader .register-label", run: "click" };
 }
@@ -214,6 +221,21 @@ export function waitRequest() {
             },
         },
     ];
+}
+
+export function storedOrderCount(expectedCount) {
+    return {
+        content: `Stored order count should be ${expectedCount}`,
+        trigger: "body",
+        run: () => {
+            const actualCount = posmodel.data.models["pos.order"].length;
+            if (actualCount !== expectedCount) {
+                throw new Error(
+                    `Expected stored order count to be ${expectedCount}, but got ${actualCount}`
+                );
+            }
+        },
+    };
 }
 
 export function isSynced() {

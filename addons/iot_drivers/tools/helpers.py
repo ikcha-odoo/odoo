@@ -39,9 +39,6 @@ from odoo.tools.misc import file_path
 lock = Lock()
 _logger = logging.getLogger(__name__)
 
-if IS_RPI:
-    import crypt
-
 
 class Orientation(Enum):
     """xrandr/wlr-randr screen orientation for kiosk mode"""
@@ -56,7 +53,7 @@ class IoTRestart(Thread):
     Thread to restart odoo server in IoT Box when we must return a answer before
     """
     def __init__(self, delay):
-        Thread.__init__(self)
+        super().__init__(daemon=True)
         self.delay = delay
 
     def run(self):
@@ -177,15 +174,13 @@ def save_conf_server(url, token, db_uuid, enterprise_code, db_name=None):
 
 
 def generate_password():
+    """Resets (pi) user password generating a new random one.
+
+    :return: The new generated password
     """
-    Generate an unique code to secure raspberry pi
-    """
-    alphabet = 'abcdefghijkmnpqrstuvwxyz23456789'
-    password = ''.join(secrets.choice(alphabet) for i in range(12))
+    password = secrets.token_urlsafe(16)
     try:
-        shadow_password = crypt.crypt(password, crypt.mksalt())
-        subprocess.run(('sudo', 'usermod', '-p', shadow_password, 'pi'), check=True)
-        subprocess.run(('sudo', 'cp', '/etc/shadow', '/root_bypass_ramdisks/etc/shadow'), check=True)
+        subprocess.run(['sudo', 'chpasswd'], input=f"pi:{password}", text=True, check=True)
         return password
     except subprocess.CalledProcessError as e:
         _logger.exception("Failed to generate password: %s", e.output)
@@ -656,7 +651,10 @@ def check_network(host=None):
     if not host:
         return None
 
-    host = socket.gethostbyname(host)
+    try:
+        host = socket.gethostbyname(host)
+    except socket.gaierror:
+        return "unreachable"
     packet_loss, avg_latency = mtr(host)
     thresholds = {"fast": 5, "normal": 20} if ip_address(host).is_private else {"fast": 50, "normal": 150}
 
